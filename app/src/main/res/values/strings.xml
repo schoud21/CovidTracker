@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">CovidTracker</string>
+
+    <!--    Validations-->
+    <string name="validate_first_name">First Name should be at least 3 characters long</string>
+    <string name="validate_last_name">Last Name should be at least 1 character long</string>
+    <string name="validate_username">Please enter a username.</string>
+    <string name="validate_password">Password\'s length must be between 6 and 12</string>
+    <string name="password_mismatch">Passwords do not match.</string>
+
+
+    <!--    Login-->
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_login">Login</string>
+    <string name="txt_sign_up">Sign Up</string>
+    <string name="error_wrong_login">Username does not exist</string>
+    <string name="error_wrong_password">Wrong password</string>
+    <string name="toast_login">Login successful</string>
+
+    <!--    Register-->
+    <string name="btn_register">Register</string>
+    <string name="hint_first_name">First Name</string>
+    <string name="hint_last_name">Last Name</string>
+    <string name="hint_confirm_password">Confirm Password</string>
+    <string name="toast_registration">Registration successful</string>
+    <string name="error_username">Username already exists! Please use a different one.</string>
+
+</resources>
