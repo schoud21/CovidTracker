@@ -11,18 +11,26 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.covidtracker.R;
+import com.example.covidtracker.data.db.AppDatabase;
+import com.example.covidtracker.data.db.dao.SymptomsDao;
+import com.example.covidtracker.data.db.dao.UserDao;
+import com.example.covidtracker.data.model.Symptoms;
 import com.example.covidtracker.data.model.User;
 import com.example.covidtracker.databinding.ActivityLoginBinding;
 import com.example.covidtracker.ui.base.BaseActivity;
 import com.example.covidtracker.ui.dashboard.DashboardActivity;
 import com.example.covidtracker.ui.register.RegistrationActivity;
 
+import java.util.List;
+
 public class LoginActivity extends BaseActivity<LoginViewModel> implements LoginNavigator {
 
     ActivityLoginBinding binding;
+    AppDatabase db;
 
     @NonNull
     @Override
@@ -37,8 +45,17 @@ public class LoginActivity extends BaseActivity<LoginViewModel> implements Login
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setDataBindings();
         viewModel.setNavigator(this);
+        db = AppDatabase.getInstance();
+//        setReportList();
     }
-
+    private void setReportList() {
+        SymptomsDao symptomsDao = db.symptomsDao();
+        symptomsDao.findByUserId(1).observe(this, new Observer<List<Symptoms>>() {
+            @Override
+            public void onChanged(List<Symptoms> symptoms) {
+String s = "";            }
+        });
+    }
     private void setDataBindings() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login);
         binding.setViewModel(viewModel);

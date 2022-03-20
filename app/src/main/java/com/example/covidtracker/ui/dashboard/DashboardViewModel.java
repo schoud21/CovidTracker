@@ -2,20 +2,87 @@ package com.example.covidtracker.ui.dashboard;
 
 import android.os.AsyncTask;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
+import com.example.covidtracker.R;
 import com.example.covidtracker.data.db.AppDatabase;
 import com.example.covidtracker.data.db.dao.SymptomsDao;
 import com.example.covidtracker.data.model.Symptoms;
 import com.example.covidtracker.ui.base.BaseViewModel;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class DashboardViewModel extends BaseViewModel<DashboardNavigator> {
 
     AppDatabase db;
+    private final MutableLiveData<List<SymptomsModel>> symptomsLiveData;
 
     public DashboardViewModel() {
         db = AppDatabase.getInstance();
+        symptomsLiveData = new MutableLiveData<>();
+    }
+
+    public void setSymptomsList() {
+        class SymptomsListTask extends AsyncTask<Void, Void, List<SymptomsModel>> {
+            @Override
+            protected List<SymptomsModel> doInBackground(Void... voids) {
+                String[] symptomNames = getNavigator().getActivityContext().getResources().getStringArray(R.array.symptomList);
+                List<SymptomsModel> symptomsList = new ArrayList<>();
+
+                for (int i = 0; i < symptomNames.length; i++) {
+                    switch (symptomNames[i]) {
+                        case "Nausea":
+                            symptomsList.add(new SymptomsModel(symptomNames[i],0));
+                            break;
+                        case "Headache":
+                            symptomsList.add(new SymptomsModel(symptomNames[i], 0));
+                            break;
+                        case "Diarrhea":
+                            symptomsList.add(new SymptomsModel(symptomNames[i], 0));
+                            break;
+                        case "Soar Throat":
+                            symptomsList.add(new SymptomsModel(symptomNames[i],  0));
+                            break;
+                        case "Fever":
+                            symptomsList.add(new SymptomsModel(symptomNames[i], 0));
+                            break;
+                        case "Muscle Ache":
+                            symptomsList.add(new SymptomsModel(symptomNames[i], 0));
+                            break;
+                        case "Loss of Smell or Taste":
+                            symptomsList.add(new SymptomsModel(symptomNames[i], 0));
+                            break;
+                        case "Cough":
+                            symptomsList.add(new SymptomsModel(symptomNames[i], 0));
+                            break;
+                        case "Shortness of Breath":
+                            symptomsList.add(new SymptomsModel(symptomNames[i],0));
+                            break;
+                        case "Feeling tired":
+                            symptomsList.add(new SymptomsModel(symptomNames[i], 0));
+                            break;
+                    }
+                }
+                return symptomsList;
+            }
+
+            @Override
+            protected void onPostExecute(List<SymptomsModel> symptomsList) {
+                super.onPostExecute(symptomsList);
+                symptomsLiveData.setValue(symptomsList);
+            }
+        }
+
+        SymptomsListTask symptomsListTask = new SymptomsListTask();
+        symptomsListTask.execute();
+    }
+
+    public LiveData<List<SymptomsModel>> getSymptomsLiveData() {
+        return symptomsLiveData;
     }
 
     public void openNextScreen(int screenNum) {
@@ -25,6 +92,7 @@ public class DashboardViewModel extends BaseViewModel<DashboardNavigator> {
     public void logout() {
         getNavigator().logout();
     }
+
 
     public void initSymptomData(boolean resetHeartRespi) {
         class InitSymptomsTask extends AsyncTask<Void, Void, Void> {
@@ -46,8 +114,21 @@ public class DashboardViewModel extends BaseViewModel<DashboardNavigator> {
         initSymptomsTask.execute();
     }
 
-    public void createReport() {
-        getNavigator().createReport();
+    public void insertToDb(Symptoms symptoms) {
+        class InitSymptomsTask extends AsyncTask<Void, Void, Void> {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                SymptomsDao symptomsDao = db.symptomsDao();
+                symptomsDao.insertSymptoms(symptoms);
+                return null;
+            }
+        }
+        InitSymptomsTask initSymptomsTask = new InitSymptomsTask();
+        initSymptomsTask.execute();
+    }
+
+    public void submit() {
+        getNavigator().submit();
     }
 
     public void addReportToDb() {
@@ -60,7 +141,7 @@ public class DashboardViewModel extends BaseViewModel<DashboardNavigator> {
                 long currentTime = System.currentTimeMillis();
                 symptoms.timestamp = getDate(currentTime, "EEE, d MMM yyyy HH:mm:ss");
                 symptomsDao.updateSymptom(symptoms);
-                initSymptomData(true);
+//                initSymptomData(true);
                 return null;
             }
 

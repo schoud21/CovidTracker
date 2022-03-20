@@ -14,7 +14,7 @@ public interface DashboardNavigator {
 
     void openNextScreen(int screenNum);
 
-    void createReport();
+    void submit();
 
     User getUser();
 
