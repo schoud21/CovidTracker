@@ -1,7 +1,10 @@
 package com.example.covidtracker.ui.login;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -67,10 +70,48 @@ public class LoginActivity extends BaseActivity<LoginViewModel> implements Login
 
     @Override
     public void login() {
-        hideKeyboard();
-        if (viewModel.isValidated(binding.etUserName, binding.etPass)) {
-            viewModel.attemptLogin(binding.etUserName.getText().toString().trim(),
-                    binding.etPass.getText().toString().trim());
+        if (checkPermission()) {
+            hideKeyboard();
+            if (viewModel.isValidated(binding.etUserName, binding.etPass)) {
+                viewModel.attemptLogin(binding.etUserName.getText().toString().trim(),
+                        binding.etPass.getText().toString().trim());
+            }
         }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 1:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    openActivity(DashboardActivity.class);
+                break;
+        }
+    }
+
+    private boolean checkPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true;
+        }
+
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            requestPermissions(new String[]{
+                            android.Manifest.permission.BLUETOOTH,
+                            android.Manifest.permission.BLUETOOTH_ADMIN,
+                            android.Manifest.permission.ACCESS_WIFI_STATE,
+                            android.Manifest.permission.CHANGE_WIFI_STATE,
+                            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    },
+                    1);
+            return false;
+        }
+
+        return true;
     }
 }

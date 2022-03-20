@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fb1e0042692185eeaef85cbe57737a88",
+    "identityHash": "4e9a2e50ef30ec493651e2a9f4c96f1b",
     "entities": [
       {
         "tableName": "user",
@@ -56,7 +56,7 @@
       },
       {
         "tableName": "symptoms",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL DEFAULT 0, `creationDate` TEXT DEFAULT '0', `nausea` REAL NOT NULL DEFAULT 0, `headache` REAL NOT NULL DEFAULT 0, `diarrhea` REAL NOT NULL DEFAULT 0, `soarThroat` REAL NOT NULL DEFAULT 0, `fever` REAL NOT NULL DEFAULT 0, `muscleAche` REAL NOT NULL DEFAULT 0, `smellLoss` REAL NOT NULL DEFAULT 0, `cough` REAL NOT NULL DEFAULT 0, `shortnessBreath` REAL NOT NULL DEFAULT 0, `tiredness` REAL NOT NULL DEFAULT 0, `heartRate` REAL NOT NULL DEFAULT 0, `respiRate` REAL NOT NULL DEFAULT 0)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL DEFAULT 0, `timestamp` TEXT DEFAULT '0', `X` REAL NOT NULL DEFAULT 0, `Y` REAL NOT NULL DEFAULT 0, `nausea` REAL NOT NULL DEFAULT 0, `headache` REAL NOT NULL DEFAULT 0, `diarrhea` REAL NOT NULL DEFAULT 0, `soarThroat` REAL NOT NULL DEFAULT 0, `fever` REAL NOT NULL DEFAULT 0, `muscleAche` REAL NOT NULL DEFAULT 0, `smellLoss` REAL NOT NULL DEFAULT 0, `cough` REAL NOT NULL DEFAULT 0, `shortnessBreath` REAL NOT NULL DEFAULT 0, `tiredness` REAL NOT NULL DEFAULT 0, `heartRate` REAL NOT NULL DEFAULT 0, `respiRate` REAL NOT NULL DEFAULT 0)",
         "fields": [
           {
             "fieldPath": "id",
@@ -72,11 +72,25 @@
             "defaultValue": "0"
           },
           {
-            "fieldPath": "creationDate",
-            "columnName": "creationDate",
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
             "affinity": "TEXT",
             "notNull": false,
             "defaultValue": "'0'"
+          },
+          {
+            "fieldPath": "X",
+            "columnName": "X",
+            "affinity": "REAL",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "Y",
+            "columnName": "Y",
+            "affinity": "REAL",
+            "notNull": true,
+            "defaultValue": "0"
           },
           {
             "fieldPath": "nausea",
@@ -176,7 +190,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fb1e0042692185eeaef85cbe57737a88')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4e9a2e50ef30ec493651e2a9f4c96f1b')"
     ]
   }
 }

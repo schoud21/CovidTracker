@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,13 +29,24 @@ import com.example.covidtracker.databinding.ActivityDashboardBinding;
 import com.example.covidtracker.ui.base.BaseActivity;
 import com.example.covidtracker.ui.login.LoginActivity;
 import com.example.covidtracker.utils.AlertUtil;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class DashboardActivity extends BaseActivity<DashboardViewModel> implements DashboardNavigator {
 
     ActivityDashboardBinding binding;
+    private final String TAG = "DashboardActivity<>";
     private final int CAMERA_PERMISSION_REQUEST_CODE = 0x01;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    double latitude, longitude;
+    String currentTime;
 
     @NonNull
     @Override
@@ -49,24 +62,26 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
         viewModel.setNavigator(this);
         viewModel.initSymptomData(false);
         setData();
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        getLocation();
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        MenuInflater menuInflater = getMenuInflater();
-//        menuInflater.inflate(R.menu.menu_toolbar, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-//        switch (item.getItemId()) {
-//            case R.id.menuLogout:
-//                viewModel.logout();
-//                break;
-//        }
-//        return true;
-//    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_toolbar, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menuLogout:
+                viewModel.logout();
+                break;
+        }
+        return true;
+    }
 
     @Override
     public Context getActivityContext() {
@@ -146,6 +161,26 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
 //        showSnackbar(getString(R.string.report_created), Color.GREEN, Color.WHITE);
     }
 
+    public void getLocation() {
+        if (this.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    if (location != null) {
+                        Log.e(TAG, "Last location : " + location.toString());
+                        latitude = location.getLatitude();
+                        longitude = location.getLongitude();
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault());
+                        currentTime = sdf.format(new Date());
+                        Log.e(TAG, currentTime);
+                    } else {
+                        Log.d(TAG, "could not get location");
+                    }
+                }
+            });
+        }
+    }
+
     private void setDataBindings() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_dashboard);
         binding.setViewModel(viewModel);
@@ -158,7 +193,7 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
         symptomsDao.loadTempSymptoms().observe(this, new Observer<List<Symptoms>>() {
             @Override
             public void onChanged(List<Symptoms> symptoms) {
-                Symptoms s = symptoms.get(0);
+//                Symptoms s = symptoms.get(0);
 
 //                binding.txtHeartRate.setText(String.valueOf(s.heartRate != 0f ? s.heartRate + " BPM" : "No Data"));
 //                binding.txtHeartRate.setTextColor(s.heartRate != 0f ? getResources().getColor(android.R.color.holo_green_light) : getResources().getColor(android.R.color.holo_red_light));

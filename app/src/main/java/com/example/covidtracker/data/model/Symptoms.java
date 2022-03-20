@@ -15,7 +15,13 @@ public class Symptoms {
     public int userId;
 
     @ColumnInfo(defaultValue = "0")
-    public String creationDate;
+    public String timestamp;
+
+    @ColumnInfo(defaultValue = "0")
+    public double X;
+
+    @ColumnInfo(defaultValue = "0")
+    public double Y;
 
     @ColumnInfo(defaultValue = "0")
     public float nausea;
@@ -57,9 +63,11 @@ public class Symptoms {
     }
 
     @Ignore
-    public Symptoms(int userId, String creationDate, float nausea, float headache, float diarrhea, float soarThroat, float fever, float muscleAche, float smellLoss, float cough, float shortnessBreath, float tiredness, float heartRate, float respiRate) {
+    public Symptoms(int userId, String timestamp, double X, double Y, float nausea, float headache, float diarrhea, float soarThroat, float fever, float muscleAche, float smellLoss, float cough, float shortnessBreath, float tiredness, float heartRate, float respiRate) {
         this.userId = userId;
-        this.creationDate = creationDate;
+        this.timestamp = timestamp;
+        this.X = X;
+        this.Y = Y;
         this.nausea = nausea;
         this.headache = headache;
         this.diarrhea = diarrhea;

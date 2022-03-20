@@ -30,7 +30,7 @@ public class DashboardViewModel extends BaseViewModel<DashboardNavigator> {
         class InitSymptomsTask extends AsyncTask<Void, Void, Void> {
             @Override
             protected Void doInBackground(Void... voids) {
-                Symptoms symptoms = new Symptoms(-1, "0", 0, 0, 0,
+                Symptoms symptoms = new Symptoms(-1, "0", 0, 0, 0, 0, 0,
                         0, 0, 0, 0, 0, 0, 0, 0, 0);
                 if (resetHeartRespi) {
                     symptoms.heartRate = 0;
@@ -58,7 +58,7 @@ public class DashboardViewModel extends BaseViewModel<DashboardNavigator> {
                 Symptoms symptoms = symptomsDao.getSymptoms().get(symptomsDao.getSymptoms().size() - 1);
                 symptoms.userId = getNavigator().getUser().getId();
                 long currentTime = System.currentTimeMillis();
-                symptoms.creationDate = getDate(currentTime, "EEE, d MMM yyyy HH:mm:ss");
+                symptoms.timestamp = getDate(currentTime, "EEE, d MMM yyyy HH:mm:ss");
                 symptomsDao.updateSymptom(symptoms);
                 initSymptomData(true);
                 return null;
