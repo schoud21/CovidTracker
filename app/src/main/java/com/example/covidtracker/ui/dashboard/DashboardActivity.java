@@ -9,6 +9,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,6 +44,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class DashboardActivity extends BaseActivity<DashboardViewModel> implements DashboardNavigator, SymptomsAdapter.RatingClickListener {
 
@@ -211,11 +213,16 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault());
                         currentTime = sdf.format(new Date());
                         Log.e(TAG, currentTime);
-                        try {
-                            insertData(36, 60, 88);
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        insertData(36, 60, 88);
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }, TimeUnit.SECONDS.toMillis(5));
                     } else {
                         Log.d(TAG, "could not get location");
                     }
