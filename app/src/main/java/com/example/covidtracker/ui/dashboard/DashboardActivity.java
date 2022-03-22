@@ -36,6 +36,13 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,6 +52,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.net.URL;
+import java.net.URLConnection;
+import java.io.OutputStream;
+
 
 public class DashboardActivity extends BaseActivity<DashboardViewModel> implements DashboardNavigator, SymptomsAdapter.RatingClickListener {
 
@@ -192,9 +203,95 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
     }
 
     @Override
-    public User getUser() {
-        return getCurrentUser();
+    public void upload() {
+        File dbFile = this.getDatabasePath("covidscanner.db").getAbsoluteFile();
+        AlertUtil.showAlertDialog(this,
+                "Upload to Server",
+                "Do you want to upload the DB?",
+                "Ok",
+                "Cancel",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String url = "http://10.153.2.15:5500/upload_video-2.php";
+                        String charset = "UTF-8";
+                        String CRLF = "\r\n";
+                        URLConnection connection = null;
+
+                        try {
+                            connection = new URL(url).openConnection();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        connection.setDoOutput(true);
+                        String boundary = Long.toHexString(System.currentTimeMillis());
+                        connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+
+                        try (
+                                OutputStream output = connection.getOutputStream();
+                                PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, charset), true);
+                        ) {
+//
+
+                            // Send video file.
+                            writer.append("--" + boundary).append(CRLF);
+                            writer.append("Content-Disposition: form-data; name=\"uploaded_file\"; filename=\"" + dbFile.getName() + "\"").append(CRLF);
+                            writer.append("Content-Type: video/mp4; charset=" + charset).append(CRLF); // Text file itself must be saved in this charset!
+                            writer.append(CRLF).flush();
+                            FileInputStream vf = new FileInputStream(dbFile);
+                            try {
+                                byte[] buffer = new byte[1024];
+                                int bytesRead = 0;
+                                while ((bytesRead = vf.read(buffer, 0, buffer.length)) >= 0) {
+                                    output.write(buffer, 0, bytesRead);
+
+                                }
+                                //   output.close();
+                                //Toast.makeText(getApplicationContext(),"Read Done", Toast.LENGTH_LONG).show();
+                            } catch (Exception exception) {
+
+
+                                //Toast.makeText(getApplicationContext(),"output exception in catch....."+ exception + "", Toast.LENGTH_LONG).show();
+                                Log.d("Error", String.valueOf(exception));
+//                                publishProgress(String.valueOf(exception));
+                                // output.close();
+
+                            }
+
+                            output.flush(); // Important before continuing with writer!
+                            writer.append(CRLF).flush(); // CRLF is important! It indicates end of boundary.
+
+
+                            // End of multipart/form-data.
+                            writer.append("--" + boundary + "--").append(CRLF).flush();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        // Request is lazily fired whenever you need to obtain information about response.
+                        int responseCode = 0;
+                        try {
+                            responseCode = ((HttpURLConnection) connection).getResponseCode();
+                        } catch (IOException ioException) {
+                            ioException.printStackTrace();
+                        }
+                        System.out.println(responseCode); // Should be 200
+
+                        return;
+                    }
+                },
+                    new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
     }
+
+    @Override
+    public User getUser() { return getCurrentUser(); }
 
     @Override
     public void onReportCreateSuccess() {
@@ -289,7 +386,7 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
             }
         });
     }
-
+// 2 Symptoms are missing
     @Override
     public void onRatingClick(SymptomsModel symptom, float rating) {
         class RatingTask extends AsyncTask<Void, Void, Void> {

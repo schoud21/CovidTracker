@@ -33,6 +33,15 @@
         </androidx.core.widget.NestedScrollView>
 
         <Button
+            android:id="@+id/btnUpload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="70dp"
+            android:onClick="@{() -> viewModel.upload()}"
+            android:text="Upload to Server" />
+
+        <Button
             android:id="@+id/btnReport"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

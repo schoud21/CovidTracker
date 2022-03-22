@@ -12,7 +12,6 @@ import com.example.covidtracker.data.model.User;
 
 @Database(entities = {User.class, Symptoms.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
-
     private static AppDatabase mInstance;
 
     public abstract UserDao userDao();

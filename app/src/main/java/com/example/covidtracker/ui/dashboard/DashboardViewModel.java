@@ -131,6 +131,10 @@ public class DashboardViewModel extends BaseViewModel<DashboardNavigator> {
         getNavigator().submit();
     }
 
+    public void upload(){
+        getNavigator().upload();
+    }
+
     public void addReportToDb() {
         class ReportTask extends AsyncTask<Void, Void, Void> {
             @Override

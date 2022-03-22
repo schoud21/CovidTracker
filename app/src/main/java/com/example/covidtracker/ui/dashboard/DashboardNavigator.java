@@ -19,4 +19,6 @@ public interface DashboardNavigator {
     User getUser();
 
     void onReportCreateSuccess();
+
+    void upload();
 }
