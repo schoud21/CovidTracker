@@ -3,6 +3,7 @@ package com.example.covidtracker.ui.dashboard;
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
@@ -27,6 +29,7 @@ import com.example.covidtracker.data.db.AppDatabase;
 import com.example.covidtracker.data.db.dao.SymptomsDao;
 import com.example.covidtracker.data.db.dao.UserDao;
 import com.example.covidtracker.data.model.Symptoms;
+import com.example.covidtracker.data.model.UploadResponse;
 import com.example.covidtracker.data.model.User;
 import com.example.covidtracker.databinding.ActivityDashboardBinding;
 import com.example.covidtracker.ui.base.BaseActivity;
@@ -38,11 +41,13 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.nio.channels.FileChannel;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -83,9 +88,15 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
 //        viewModel.initSymptomData(false);
         setData();
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        getLocation();
         setRecyclerView();
         mSymptoms = new Symptoms();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getLocation();
+
     }
 
     private void setRecyclerView() {
@@ -205,6 +216,7 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
     @Override
     public void upload() {
         File dbFile = this.getDatabasePath("covidscanner.db").getAbsoluteFile();
+        System.out.println(dbFile);
         AlertUtil.showAlertDialog(this,
                 "Upload to Server",
                 "Do you want to upload the DB?",
@@ -213,7 +225,7 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String url = "http://10.153.2.15:5500/upload_video-2.php";
+                        String url = "http://192.168.0.98:5500/upload_video-2.php";
                         String charset = "UTF-8";
                         String CRLF = "\r\n";
                         URLConnection connection = null;
@@ -231,12 +243,10 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
                                 OutputStream output = connection.getOutputStream();
                                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, charset), true);
                         ) {
-//
-
                             // Send video file.
                             writer.append("--" + boundary).append(CRLF);
-                            writer.append("Content-Disposition: form-data; name=\"uploaded_file\"; filename=\"" + dbFile.getName() + "\"").append(CRLF);
-                            writer.append("Content-Type: video/mp4; charset=" + charset).append(CRLF); // Text file itself must be saved in this charset!
+                            writer.append("Content-Disposition: form-data; name=\"files[]\"; filename=\"" + dbFile.getName() + "\"").append(CRLF);
+                            writer.append("Content-Type: file; charset=" + charset).append(CRLF); // Text file itself must be saved in this charset!
                             writer.append(CRLF).flush();
                             FileInputStream vf = new FileInputStream(dbFile);
                             try {
@@ -246,8 +256,6 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
                                     output.write(buffer, 0, bytesRead);
 
                                 }
-                                //   output.close();
-                                //Toast.makeText(getApplicationContext(),"Read Done", Toast.LENGTH_LONG).show();
                             } catch (Exception exception) {
 
 
@@ -260,8 +268,6 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
 
                             output.flush(); // Important before continuing with writer!
                             writer.append(CRLF).flush(); // CRLF is important! It indicates end of boundary.
-
-
                             // End of multipart/form-data.
                             writer.append("--" + boundary + "--").append(CRLF).flush();
                         } catch (UnsupportedEncodingException e) {
@@ -290,6 +296,69 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
                 });
     }
 
+    public static void copyFile(FileInputStream fromFile, FileOutputStream toFile) throws IOException {
+        FileChannel fromChannel = null;
+        FileChannel toChannel = null;
+        try {
+            fromChannel = fromFile.getChannel();
+            toChannel = toFile.getChannel();
+            fromChannel.transferTo(0, fromChannel.size(), toChannel);
+        } finally {
+            try {
+                if (fromChannel != null) {
+                    fromChannel.close();
+                }
+            } finally {
+                if (toChannel != null) {
+                    toChannel.close();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void uploadRequest() {
+        File Db = new File("/data/data/com.example.covidtracker/databases/covidscanner.db");
+        Date d = new Date();
+
+        File file = new File("newDb.db"); //if file was created earlier the delete the old file
+        if (file.exists()) {
+            file.delete();
+        }
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        file.setWritable(true);
+
+        try {
+            copyFile(new FileInputStream(Db), new FileOutputStream(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        viewModel.uploadRequest(Db);
+        viewModel.getUploadResponseLiveData().observe(this, new Observer<UploadResponse>() {
+            @Override
+            public void onChanged(UploadResponse uploadVideoResponse) {
+//                if (uploadVideoResponse != null) {
+//                    if (uploadVideoResponse.getSuccess() == 1) {
+//                        Toast.makeText(DashboardActivity.this, uploadVideoResponse.getMessage(), Toast.LENGTH_SHORT).show();
+//                    } else if (uploadVideoResponse.getSuccess() == 0) {
+//                        onError(uploadVideoResponse.getMessage());
+//                    }
+//                }
+//                int success = uploadVideoResponse != null ? uploadVideoResponse.getSuccess() : 0;
+//                String message = uploadVideoResponse != null ? uploadVideoResponse.getMessage() : "Video Upload Failed!";
+//                Intent intent = new Intent();
+//                intent.putExtra("success", success);
+//                intent.putExtra("message", message);
+//                setResult(RESULT_OK, intent);
+//                finish();
+            }
+        });
+    }
+
     @Override
     public User getUser() { return getCurrentUser(); }
 
@@ -310,16 +379,16 @@ public class DashboardActivity extends BaseActivity<DashboardViewModel> implemen
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault());
                         currentTime = sdf.format(new Date());
                         Log.e(TAG, currentTime);
-                            new Handler().postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
+//                            new Handler().postDelayed(new Runnable() {
+//                                @Override
+//                                public void run() {
                                     try {
                                         insertData(36, 60, 88);
                                     } catch (ParseException e) {
                                         e.printStackTrace();
                                     }
-                                }
-                            }, TimeUnit.SECONDS.toMillis(5));
+//                                }
+//                            }, TimeUnit.SECONDS.toMillis(5));
                     } else {
                         Log.d(TAG, "could not get location");
                     }

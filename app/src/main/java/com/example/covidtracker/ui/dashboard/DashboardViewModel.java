@@ -9,8 +9,11 @@ import com.example.covidtracker.R;
 import com.example.covidtracker.data.db.AppDatabase;
 import com.example.covidtracker.data.db.dao.SymptomsDao;
 import com.example.covidtracker.data.model.Symptoms;
+import com.example.covidtracker.data.model.UploadResponse;
+import com.example.covidtracker.data.repository.UploadRepo;
 import com.example.covidtracker.ui.base.BaseViewModel;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,9 +24,14 @@ public class DashboardViewModel extends BaseViewModel<DashboardNavigator> {
     AppDatabase db;
     private final MutableLiveData<List<SymptomsModel>> symptomsLiveData;
 
+    private UploadRepo uploadRepo;
+    private LiveData<UploadResponse> uploadResponseLiveData;
+
     public DashboardViewModel() {
         db = AppDatabase.getInstance();
         symptomsLiveData = new MutableLiveData<>();
+        uploadRepo = new UploadRepo();
+        uploadResponseLiveData = uploadRepo.getUploadResponseLiveData();
     }
 
     public void setSymptomsList() {
@@ -131,10 +139,21 @@ public class DashboardViewModel extends BaseViewModel<DashboardNavigator> {
         getNavigator().submit();
     }
 
-    public void upload(){
-        getNavigator().upload();
+//    public void upload(){
+//        getNavigator().upload();
+//    }
+
+    public void uploadRequest(File file) {
+        uploadRepo.uploadFile(file);
     }
 
+    public void upload() {
+        getNavigator().uploadRequest();
+    }
+
+    public LiveData<UploadResponse> getUploadResponseLiveData() {
+        return uploadResponseLiveData;
+    }
     public void addReportToDb() {
         class ReportTask extends AsyncTask<Void, Void, Void> {
             @Override

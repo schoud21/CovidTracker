@@ -21,4 +21,6 @@ public interface DashboardNavigator {
     void onReportCreateSuccess();
 
     void upload();
+
+    void uploadRequest();
 }
